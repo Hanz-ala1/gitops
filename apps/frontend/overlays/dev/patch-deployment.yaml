@@ -9,4 +9,4 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: my-frontend-image:dev
+        image: nginx:alpine
