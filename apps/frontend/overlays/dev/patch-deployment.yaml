@@ -1,0 +1,12 @@
+# apps/frontend/overlays/dev/patch-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: frontend
+        image: my-frontend-image:dev
