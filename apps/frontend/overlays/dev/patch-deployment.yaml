@@ -8,5 +8,5 @@ spec:
   template:
     spec:
       containers:
-      - name: frontendAttemp2
+      - name: frontendattemptwo
         image: nginx:alpine
