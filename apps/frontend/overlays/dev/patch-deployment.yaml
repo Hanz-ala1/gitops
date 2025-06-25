@@ -10,6 +10,3 @@ spec:
       containers:
       - name: frontend
         image: nginx:alpine
-      - name: testcontainer
-        image: busybox:latest
-        command: ['sh', '-c', 'sleep 3600']
