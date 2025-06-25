@@ -8,5 +8,7 @@ spec:
   template:
     spec:
       containers:
-      - name: frontendtest
+      - name: frontend
         image: nginx:alpine
+      - name: testcontainer
+        image: busybox:latest
