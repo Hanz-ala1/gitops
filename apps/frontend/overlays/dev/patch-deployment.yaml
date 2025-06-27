@@ -9,4 +9,4 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: nginx:alpine
+        image: nginxdemos/hello
