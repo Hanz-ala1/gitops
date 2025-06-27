@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Hanz-ala1/gitops
-    targetRevision: MM-1
+    targetRevision: MM-2
     path: envs/dev
   destination:
     server: https://kubernetes.default.svc
