@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: backend
+          image: busybox
+          command: ["sh","-c", "while true; do echo backend dev version; sleep 10 ; done"]

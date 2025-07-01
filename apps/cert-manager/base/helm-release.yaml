@@ -1,20 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root-app
+  name: cert-manager
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/Hanz-ala1/gitops
-    targetRevision: MM-2
+    repoURL: https://charts.jetstack.io
+    chart: cert-manager
+    targetRevision: v1.14.4
     path: envs/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: cert-manager
   syncPolicy:
     automated:
       prune: true
       selfHeal: false
     syncOptions:
-      - CreateNamespace=false
+      - CreateNamespace=true

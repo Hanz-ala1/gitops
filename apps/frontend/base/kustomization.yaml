@@ -1,3 +1,4 @@
 resources:
   - deployment.yaml
-  - services.yaml
+  - service.yaml
+  - ingress.yaml
