@@ -1,1 +1,2 @@
-installCRDS: true
+installCRDS: false
+replicaCount: 2

@@ -1,3 +1,4 @@
 resources:
+  - crds.yaml
   - helm-release.yaml
   
