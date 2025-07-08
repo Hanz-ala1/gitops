@@ -6,12 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.jetstack.io
-    chart: cert-manager
-    targetRevision: v1.14.4
-    helm: 
-      valueFiles:
-        - values.yaml
+    repoURL: https://github.com/Hanz-ala1/gitops
+    targetRevision: MM-2
+    path: apps/cert-manager/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager

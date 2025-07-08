@@ -1,3 +1,5 @@
 resources:
+  - crds.yaml
   - helm-release.yaml
+  - letsencrypt.yaml
   
