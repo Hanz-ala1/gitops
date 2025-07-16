@@ -2,7 +2,7 @@
 
 ## 💡 Project Purpose
 
-This repository provides an end-to-end GitOps deployment pipeline using **ArgoCD**, **TLS via cert-manager**, and **Cloudflare DNS**. It's built on top of an EKS infrastructure provisioned via Terraform (see [infra repo](#)).
+This repository provides an end-to-end GitOps deployment pipeline using **ArgoCD**, **TLS via cert-manager**, and **Cloudflare DNS**. It's built on top of an EKS infrastructure provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab)).
 
 We adopt ArgoCD's **App of Apps** pattern to manage application lifecycle declaratively, promoting consistent, repeatable Kubernetes deployments.
 
