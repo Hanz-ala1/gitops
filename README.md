@@ -11,8 +11,6 @@ We adopt ArgoCD's **App of Apps** pattern to manage application lifecycle declar
 
 Before diving into the GitOps setup, here’s a simplified view of how a pod is deployed in EKS when you run a command like: 
 
-```bash
-kubectl run nginx --image=nginx
 
 ![EKS POD DEPLOYMENT DIAGRRAM](docs/eks-pod-deployment.png)
 
