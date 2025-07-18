@@ -6,6 +6,17 @@ This repository provides an end-to-end GitOps deployment pipeline using **ArgoCD
 
 We adopt ArgoCD's **App of Apps** pattern to manage application lifecycle declaratively, promoting consistent, repeatable Kubernetes deployments.
 
+
+## 🗺️ EKS Pod Deployment: Background
+
+Before diving into the GitOps setup, here’s a simplified view of how a pod is deployed in EKS when you run a command like: 
+
+```bash
+kubectl run nginx --image=nginx
+
+![EKS POD DEPLOYMENT DIAGRRAM](docs/eks-pod-deployment.png)
+
+
 ---
 
 ## 🧠 What You'll Learn / Practice
