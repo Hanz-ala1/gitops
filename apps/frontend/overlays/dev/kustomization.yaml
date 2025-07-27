@@ -4,3 +4,4 @@ resources:
 patchesStrategicMerge:
   - patch-deployment.yaml
   - ingress-certmanager.yaml
+
