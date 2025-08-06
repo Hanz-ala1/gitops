@@ -1,0 +1,17 @@
+# Common
+.git
+.gitignore
+Dockerfile
+README.md
+*.sh
+.env
+
+# Node.js or frontend builds
+node_modules
+dist
+build
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

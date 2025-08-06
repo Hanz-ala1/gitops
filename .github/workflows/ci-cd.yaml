@@ -1,0 +1,70 @@
+name: Build, Push to ECR & Patch Kustomization
+
+on:
+  push:
+    branches: [MM-3]
+    paths:
+      - 'apps/frontend/**'
+      - 'apps/backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token : $ {{ secrets.GH_PAT }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      # ---------- FRONTEND ----------
+      - name: Build and push frontend Docker image
+        run: |
+          FRONTEND_TAG=frontend-${{ github.sha }}
+          docker build -t $ECR_REGISTRY/my-frontend:$FRONTEND_TAG ./apps/frontend
+          docker push $ECR_REGISTRY/my-frontend:$FRONTEND_TAG
+
+      - name: Update frontend kustomization with image tag
+        run: |
+          cd apps/frontend/overlays/dev
+          kustomize edit set image my-frontend=$ECR_REGISTRY/my-frontend:frontend-${{ github.sha }}
+          cd -
+      
+      # ---------- BACKEND ----------
+      - name: Build and push backend Docker image
+        run: |
+          BACKEND_TAG=backend-${{ github.sha }}
+          docker build -t $ECR_REGISTRY/my-backend:$BACKEND_TAG ./apps/backend
+          docker push $ECR_REGISTRY/my-backend:$BACKEND_TAG
+
+      - name: Update backend kustomization with image tag
+        run: |
+          cd apps/backend/overlays/dev
+          kustomize edit set image my-backend=$ECR_REGISTRY/my-backend:backend-${{ github.sha }}
+          cd -
+
+# ---------- COMMIT & PUSH CHANGES ----------
+      - name: Configure Git & set authenticated remote
+        run: | 
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+      - name: Commit and push kustomization changes
+        run: |
+          git add apps/*/overlays/dev/kustomization.yaml
+          git commit -m "Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
+          git push
