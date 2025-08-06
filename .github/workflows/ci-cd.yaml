@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token : $ {{ secrets.GH_PAT }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -60,8 +62,7 @@ jobs:
         run: | 
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
-
+          
       - name: Commit and push kustomization changes
         run: |
           git add apps/*/overlays/dev/kustomization.yaml
