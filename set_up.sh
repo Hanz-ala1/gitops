@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Need further work
 CLUSTER_NAME="eks1"
 REGION="eu-west-2"
 
