@@ -17,8 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          token : ${{ secrets.GH_PAT }}
-          persist-credentials: false 
+          token: ${{ secrets.GH_PAT }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
