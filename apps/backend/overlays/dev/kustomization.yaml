@@ -1,5 +1,11 @@
 resources:
-  - ../../base
+- ../../base
 
 patchesStrategicMerge:
-  - patch-deployment.yaml
+- patch-deployment.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: my-backend
+  newName: 053447641011.dkr.ecr.eu-west-2.amazonaws.com/my-backend
+  newTag: backend-e1221e828fc4279d859cbf828919bcac344333de
