@@ -1,4 +1,4 @@
-# A simple static site server using Nginx test
+# A simple static site server using Nginx test 2
 FROM nginx:alpine
 COPY . /usr/share/nginx/html
 EXPOSE 80
