@@ -9,4 +9,4 @@ kind: Kustomization
 images:
 - name: my-frontend
   newName: 053447641011.dkr.ecr.eu-west-2.amazonaws.com/my-frontend
-  newTag: frontend-f8cf0fa6a6dbacf48eabd8a119a04e404c49fb9d
+  newTag: frontend-5efc9a9998eac9b7c31f232fb38853513e7730d2
