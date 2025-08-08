@@ -8,4 +8,4 @@ kind: Kustomization
 images:
 - name: my-backend
   newName: 053447641011.dkr.ecr.eu-west-2.amazonaws.com/my-backend
-  newTag: backend-fff2b0c1732a470fd262d21021020d9477d9173d
+  newTag: backend-1b3021ca95a14b446679ef45fc4ac21da1fd78e0
