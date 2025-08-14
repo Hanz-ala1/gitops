@@ -40,8 +40,7 @@ jobs:
           COMMIT_SHA=${GITHUB_SHA}
           SHORT_SHA="${COMMIT_SHA:0:7}"
           COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
-
-        # Puts a clickable commit link 
+          # Puts a clickable commit link 
           sed -i "s|<!-- injected at runtime -->|<a href='${COMMIT_URL}' target='_blank'>${SHORT_SHA}</a>|" apps/frontend/site/index.html
 
 
