@@ -6,7 +6,7 @@ on:
     paths:
       - 'apps/frontend/**'
       - 'apps/backend/**'
-
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-22.04
