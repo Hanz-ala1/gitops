@@ -35,6 +35,16 @@ jobs:
           | docker login --username AWS --password-stdin $ECR_REGISTRY
 
       # ---------- FRONTEND ----------
+      - name: Inject commit SHA into frontend html
+        run: | 
+          COMMIT_SHA=${GITHUB_SHA}
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
+
+        # Puts a clickable commit link 
+          sed -i "s|<!-- injected at runtime -->|<a href='${COMMIT_URL}' target='_blank'>${SHORT_SHA}</a>|" apps/frontend/site/index.html
+
+
       - name: Build and push frontend Docker image
         run: |
           FRONTEND_TAG=frontend-${{ github.sha }}
