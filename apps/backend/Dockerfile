@@ -1,4 +1,4 @@
-# A simple Python HTTP server for static files or demo purposes
+# A simple Python HTTP server for static files or demo purpose 1
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .

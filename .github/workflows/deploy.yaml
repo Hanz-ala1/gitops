@@ -6,19 +6,21 @@ on:
     paths:
       - 'apps/frontend/**'
       - 'apps/backend/**'
-
+  workflow_dispatch:
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      BUMP_BRANCH: ci/image-bump-${{ github.sha }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          token : $ {{ secrets.GH_PAT }}
-          persist-credentials: false 
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -33,6 +35,28 @@ jobs:
           | docker login --username AWS --password-stdin $ECR_REGISTRY
 
       # ---------- FRONTEND ----------
+      - name: Inject commit SHA into frontend html
+        run: |
+          set -e  # stop immediately if any command fails
+
+          FILE="apps/frontend/site/index.html"
+          if [ ! -f "$FILE" ]; then
+            echo "File $FILE not found!"
+            exit 1
+          fi
+
+          COMMIT_SHA="${GITHUB_SHA}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
+
+          echo "Injecting commit link: $SHORT_SHA → $COMMIT_URL"
+
+          # Use sed with backup so we don't break the file
+          sed -i.bak "s|<!-- injected at runtime -->|<a href='${COMMIT_URL}' target='_blank'>${SHORT_SHA}</a>|" "$FILE"
+
+          # Show first few lines for confirmation
+          head -n 10 "$FILE"
+
       - name: Build and push frontend Docker image
         run: |
           FRONTEND_TAG=frontend-${{ github.sha }}
@@ -63,10 +87,10 @@ jobs:
         run: | 
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
+          git checkout -b $BUMP_BRANCH
 
       - name: Commit and push kustomization changes
         run: |
           git add apps/*/overlays/dev/kustomization.yaml
           git commit -m "Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin $BUMP_BRANCH

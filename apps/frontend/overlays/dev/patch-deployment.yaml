@@ -5,8 +5,4 @@ metadata:
   name: frontend
 spec:
   replicas: 2
-  template:
-    spec:
-      containers:
-      - name: frontend
-        image: nginxdemos/hello
+
