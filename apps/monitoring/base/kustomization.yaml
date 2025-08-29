@@ -1,2 +1,2 @@
 resources:
-  - helm-release.yaml
+  - argo-grafana.yaml
