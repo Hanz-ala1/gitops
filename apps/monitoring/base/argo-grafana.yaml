@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: grafana
-    targetRevision: 6.41.0    # Use the version you want
+    targetRevision: 6.41.0 
     helm:
       valueFiles:
         - values.yaml
@@ -18,6 +18,6 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false
     syncOptions:
       - CreateNamespace=true
