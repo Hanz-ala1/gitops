@@ -1,20 +1,18 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: kube-prometheus-stack
+  name: grafana
   namespace: monitoring
 spec:
-  releaseName: kube-prometheus-stack
+  releaseName: grafana
   chart:
     spec:
-      chart: kube-prometheus-stack
-      version: 55.5.0 
+      chart: grafana
+      version: 6.49.3 # stable Helm chart version
       sourceRef:
         kind: HelmRepository
-        name: prometheus-community
+        name: grafana
         namespace: flux-system
-  interval: 5m
   valuesFrom:
     - kind: ConfigMap
-      name: monitoring-values
-      valuesKey: values.yaml
+      name: grafana-values
