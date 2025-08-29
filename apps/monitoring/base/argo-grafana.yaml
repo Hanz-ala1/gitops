@@ -1,6 +1,8 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
   name: grafana
   namespace: argocd
 spec:
@@ -10,8 +12,36 @@ spec:
     chart: grafana
     targetRevision: 8.0.0 
     helm:
-      valueFiles:
-        - values.yaml
+      values: |
+        admin:
+          existingSecret: grafana-admin
+          userKey: admin-user
+          passwordKey: admin-password
+
+        # using ClusterIP because we're routing via Ingress 
+        service:
+          type: ClusterIP
+          port: 80
+
+        ingress:
+          enabled: true
+          ingressClassName: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: "letsencrypt-prod"
+            acme.cert-manager.io/http01-edit-in-place: "true"
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          hosts:
+            - grafana.thriveai.website
+          tls:
+            - secretName: grafana-tls
+              hosts:
+                - grafana.thriveai.website
+
+        persistence:
+          enabled: true
+          size: 1Gi
+          storageClassName: gp2
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
