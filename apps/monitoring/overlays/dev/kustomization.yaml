@@ -1,6 +1,2 @@
 resources:
   - ../../base
-patchesStrategicMerge:
-  - patch-argo-grafana.yaml
-
-namespace: monitoring
