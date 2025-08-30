@@ -38,7 +38,7 @@ spec:
                 - grafana.thriveai.website
 
         persistence:
-          enabled: true
+          enabled: false
           size: 1Gi
           storageClassName: gp2
 
