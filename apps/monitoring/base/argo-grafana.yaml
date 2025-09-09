@@ -8,12 +8,15 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://grafana.github.io/helm-charts
+  - repoURL: https://grafana.github.io/helm-charts
     chart: grafana
     targetRevision: 8.0.0 
     helm:
       valueFiles:
-        - apps/monitoring/base/values.yaml
+        - $values/apps/monitoring/base/values.yaml
+  - repoURL:
+    targetRevision: feature/prometheus-grafana
+    ref: grafana-values
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
