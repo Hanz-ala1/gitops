@@ -2,7 +2,7 @@ name: Build, Push to ECR & Patch Kustomization
 
 on:
   push:
-    branches: [MM-3]
+    branches: [feature/prometheus-grafana]
     paths:
       - 'apps/frontend/**'
       - 'apps/backend/**'

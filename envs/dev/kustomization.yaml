@@ -4,3 +4,4 @@ resources:
 - ../../apps/frontend/overlays/dev
 - ../../apps/backend/overlays/dev
 - ../../apps/cert-manager/overlays/dev
+- ../../apps/monitoring/overlays/dev

@@ -1,13 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
   name: root-app
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Hanz-ala1/gitops
-    targetRevision: MM-3
+    targetRevision: feature/prometheus-grafana
     path: envs/dev
   destination:
     server: https://kubernetes.default.svc
