@@ -14,7 +14,7 @@ spec:
     helm:
       valueFiles:
       - $values/apps/monitoring/base/values.yaml
-  - repoURL:
+  - repoURL: https://github.com/Hanz-ala1/gitops
     targetRevision: feature/prometheus-grafana
     ref: grafana-values
   destination:
