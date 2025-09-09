@@ -13,10 +13,10 @@ spec:
     targetRevision: 8.0.0 
     helm:
       valueFiles:
-      - $values/blob/main/charts/grafana/values.yaml
-  - repoURL: https://github.com/Hanz-ala1/gitops/apps/monitoring/base/values.yaml
+      - $values/apps/monitoring/base/values.yaml
+  - repoURL: https://github.com/Hanz-ala1/gitops
     targetRevision: feature/prometheus-grafana
-    ref: grafana-values
+    ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
