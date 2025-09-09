@@ -16,6 +16,8 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     - grafana.thriveai.website
+  path: /
+  pathType: Prefix
   tls:
     - secretName: grafana-tls
       hosts:
