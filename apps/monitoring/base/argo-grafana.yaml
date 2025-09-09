@@ -13,7 +13,7 @@ spec:
     targetRevision: 8.0.0 
     helm:
       valueFiles:
-        - $values/apps/monitoring/base/values.yaml
+      - $values/apps/monitoring/base/values.yaml
   - repoURL:
     targetRevision: feature/prometheus-grafana
     ref: grafana-values
