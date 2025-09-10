@@ -6,10 +6,8 @@ pushgateway:
 
 server:
   persistentVolume:
-    enabled: true
-    storageClass: gp2
-    size: 8Gi
-
+    enabled: false
+    
   service:
     type: ClusterIP
     port: 80
