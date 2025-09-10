@@ -8,9 +8,9 @@ metadata:
 spec:
   project: default
   sources:
-  - repoURL: https://grafana.github.io/helm-charts
+  - repoURL: https://promethus-community.github.io/helm-charts
     chart: prometheus
-    targetRevision: 18.0.0 
+    targetRevision: 18.0.0
     helm:
       valueFiles:
       - $values/apps/monitoring/base/prometheus_values.yaml
