@@ -1,2 +1,4 @@
 resources:
-  - argo-grafana.yaml
+  - grafana_app.yaml
+  - prometheus_app.yaml
+  

@@ -3,17 +3,17 @@ kind: Application
 metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-  name: grafana
+  name: prometheus
   namespace: argocd
 spec:
   project: default
   sources:
   - repoURL: https://grafana.github.io/helm-charts
-    chart: grafana
-    targetRevision: 8.0.0 
+    chart: prometheus
+    targetRevision: 15.7.0 
     helm:
       valueFiles:
-      - $values/apps/monitoring/base/values.yaml
+      - $values/apps/monitoring/base/prometheus_values.yaml
   - repoURL: https://github.com/Hanz-ala1/gitops
     targetRevision: feature/prometheus-grafana
     ref: values
