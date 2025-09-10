@@ -10,7 +10,7 @@ spec:
   sources:
   - repoURL: https://grafana.github.io/helm-charts
     chart: prometheus
-    targetRevision: 15.7.0 
+    targetRevision: 18.0.0 
     helm:
       valueFiles:
       - $values/apps/monitoring/base/prometheus_values.yaml
