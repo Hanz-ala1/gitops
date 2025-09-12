@@ -2,10 +2,10 @@ name: Build, Push to ECR & Patch Kustomization
 
 on:
   push:
-    branches: [feature/prometheus-grafana]
+    branches:
+      - '**'
     paths:
       - 'apps/frontend/**'
-      - 'apps/backend/**'
   workflow_dispatch:
 jobs:
   deploy:
@@ -13,7 +13,8 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-      BUMP_BRANCH: ci/image-bump-${{ github.sha }}
+      BRANCH_NAME: ${{ github.ref_name}}
+      BUMP_BRANCH: ci/frontend-bump-${{ github.ref_name }}-${{ github.sha }}
 
     steps:
       - name: Checkout code
@@ -69,18 +70,6 @@ jobs:
           kustomize edit set image my-frontend=$ECR_REGISTRY/my-frontend:frontend-${{ github.sha }}
           cd -
       
-      # ---------- BACKEND ----------
-      - name: Build and push backend Docker image
-        run: |
-          BACKEND_TAG=backend-${{ github.sha }}
-          docker build -t $ECR_REGISTRY/my-backend:$BACKEND_TAG ./apps/backend
-          docker push $ECR_REGISTRY/my-backend:$BACKEND_TAG
-
-      - name: Update backend kustomization with image tag
-        run: |
-          cd apps/backend/overlays/dev
-          kustomize edit set image my-backend=$ECR_REGISTRY/my-backend:backend-${{ github.sha }}
-          cd -
 
 # ---------- COMMIT & PUSH CHANGES ----------
       - name: Configure Git & set authenticated remote
@@ -91,6 +80,6 @@ jobs:
 
       - name: Commit and push kustomization changes
         run: |
-          git add apps/*/overlays/dev/kustomization.yaml
-          git commit -m "Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
+          git add apps/frontend/overlays/dev/kustomization.yaml
+          git commit -m "Frontend Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
           git push origin $BUMP_BRANCH
