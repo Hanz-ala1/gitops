@@ -1,6 +1,9 @@
 ## Branch Naming Note
 Initial branches (`MM-1`, `MM-2`, `MM-3`) reflect the original setup phase.  
 From this point forward, we adopt semantic branch naming (`feature/`, `bugfix/`, `chore/`) for clarity.
+## [feature/prometheus-grafana] - 11/09/2025
+- Prometheus deployed via helm chart, similar set-up to grafana for now
+
 ## [feature/prometheus-grafana] - 09/09/2025
 - Grafana deployed via Helm chart through ArgoCD App of Apps pattern.
 
