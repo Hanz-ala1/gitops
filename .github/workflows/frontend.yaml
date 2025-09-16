@@ -24,8 +24,6 @@ jobs:
           fetch-depth: 0
       - name: SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectBaseDir: apps/frontend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
