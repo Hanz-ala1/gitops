@@ -15,13 +15,16 @@ jobs:
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
       BRANCH_NAME: ${{ github.ref_name}}
       BUMP_BRANCH: ci/frontend-bump-${{ github.ref_name }}-${{ github.sha }}
-#--------------CODE ANALYSIS-------------
+      IMAGE_TAG: ${{ github.sha }}
+#--------------CHECKOUT-------------
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
+
+#--------------SONARCLOUD-------------
       - name: SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2
         with:
@@ -29,19 +32,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        run: |
-          aws ecr get-login-password --region $AWS_REGION \
-          | docker login --username AWS --password-stdin $ECR_REGISTRY
-
-      # ---------- FRONTEND ----------
+#--------------BUILD IMAGE-------------
       - name: Inject commit SHA into frontend html
         run: |
           set -e  # stop immediately if any command fails
@@ -66,28 +57,41 @@ jobs:
 
       - name: Build frontend Docker image
         run: |
-          FRONTEND_TAG=frontend-${{ github.sha }}
-          docker build -t $ECR_REGISTRY/my-frontend:$FRONTEND_TAG ./apps/frontend
+          docker build -t frontend:$IMAGE_TAG ./apps/frontend
 
-      - name: Scan images with Trivy
+#--------------TRIVY SCAN LOCAL IMAGE -------------
+      - name: Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ env.ECR_REGISTRY }}/myfrontend:frontend-${{ github.sha }}
+          image-ref: frontend:${{ env.FRONTEND_TAG}}
           format: 'table'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          exit-code : '1' #fail if critical or high is found
+          exit-code: '1' #fail if critical or high is found
 
-      - name: Push frontend Docker image
+#--------------PUSH TO AWS ECR -------------
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
         run: |
-          FRONTEND_TAG=frontend-${{ github.sha }}
-          docker push $ECR_REGISTRY/my-frontend:$FRONTEND_TAG
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Push Frontend Docker image to ECR
+        run: |
+          docker tag frontend:$IMAGE_TAG $ECR_REGISTRY/frontend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/frontend:$IMAGE_TAG
 
 
-      - name: Update frontend kustomization with image tag
+      - name: Update frontend kustomization with new image tag
         run: |
           cd apps/frontend/overlays/dev
-          kustomize edit set image my-frontend=$ECR_REGISTRY/my-frontend:frontend-${{ github.sha }}
+          kustomize edit set image frontend=$ECR_REGISTRY/frontend:$IMAGE_TAG
           cd -
       
 
