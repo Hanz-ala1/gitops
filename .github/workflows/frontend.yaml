@@ -71,11 +71,11 @@ jobs:
           docker push $ECR_REGISTRY/my-frontend:$FRONTEND_TAG
 
       - name: Scan images with Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ${{ env.ECR_REGISTRY }}/myfrontend:frontend-${{ github.sha }}
           format: 'table'
-          severity: 'CRITCAL,HIGH'
+          severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code : '1' #fail if critical or high is found
 
