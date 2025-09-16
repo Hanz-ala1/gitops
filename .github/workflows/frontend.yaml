@@ -68,7 +68,6 @@ jobs:
         run: |
           FRONTEND_TAG=frontend-${{ github.sha }}
           docker build -t $ECR_REGISTRY/my-frontend:$FRONTEND_TAG ./apps/frontend
-          docker push $ECR_REGISTRY/my-frontend:$FRONTEND_TAG
 
       - name: Scan images with Trivy
         uses: aquasecurity/trivy-action@0.28.0
