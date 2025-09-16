@@ -63,7 +63,7 @@ jobs:
       - name: Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: frontend:${{ env.FRONTEND_TAG}}
+          image-ref: frontend:${{ env.IMAGE_TAG}}
           format: 'table'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
