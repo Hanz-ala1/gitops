@@ -27,7 +27,7 @@ jobs:
         with:
           projectBaseDir: apps/frontend
         env:
-          SONAR_TOKEN: $${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
