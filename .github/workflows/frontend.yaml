@@ -69,7 +69,7 @@ jobs:
           ignore-unfixed: true
           exit-code: '1' #fail if critical or high is found
 
-#--------------PUSH TO AWS ECR -------------
+#--------------Configure AWS -------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -82,12 +82,13 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION \
           | docker login --username AWS --password-stdin $ECR_REGISTRY
 
+#--------------PUSH TO AWS ECR -------------
       - name: Push Frontend Docker image to ECR
         run: |
           docker tag frontend:$IMAGE_TAG $ECR_REGISTRY/frontend:$IMAGE_TAG
           docker push $ECR_REGISTRY/frontend:$IMAGE_TAG
 
-
+#-------------- Kustomization -------------
       - name: Update frontend kustomization with new image tag
         run: |
           cd apps/frontend/overlays/dev
