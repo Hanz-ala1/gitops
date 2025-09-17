@@ -1,0 +1,110 @@
+name: Frontend Build, Push to ECR & Patch Kustomization
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'apps/frontend/**'
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      BRANCH_NAME: ${{ github.ref_name}}
+      BUMP_BRANCH: ci/frontend-bump-${{ github.ref_name }}-${{ github.sha }}
+      IMAGE_TAG: ${{ github.sha }}
+#--------------CHECKOUT-------------
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+#--------------SONARCLOUD-------------
+      - name: SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: apps/frontend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+#--------------BUILD IMAGE-------------
+      - name: Inject commit SHA into frontend html
+        run: |
+          set -e  # stop immediately if any command fails
+
+          FILE="apps/frontend/site/index.html"
+          if [ ! -f "$FILE" ]; then
+            echo "File $FILE not found!"
+            exit 1
+          fi
+
+          COMMIT_SHA="${GITHUB_SHA}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
+
+          echo "Injecting commit link: $SHORT_SHA → $COMMIT_URL"
+
+          # Use sed with backup so we don't break the file
+          sed -i.bak "s|<!-- injected at runtime -->|<a href='${COMMIT_URL}' target='_blank'>${SHORT_SHA}</a>|" "$FILE"
+
+          # Show first few lines for confirmation
+          head -n 10 "$FILE"
+
+      - name: Build frontend Docker image
+        run: |
+          docker build -t frontend:$IMAGE_TAG ./apps/frontend
+
+#--------------TRIVY SCAN LOCAL IMAGE -------------
+      - name: Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: frontend:${{ env.IMAGE_TAG}}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '1' #fail if critical or high is found
+
+#--------------Configure AWS -------------
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+#--------------PUSH TO AWS ECR -------------
+      - name: Push Frontend Docker image to ECR
+        run: |
+          docker tag frontend:$IMAGE_TAG $ECR_REGISTRY/frontend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/frontend:$IMAGE_TAG
+
+#-------------- Kustomization -------------
+      - name: Update frontend kustomization with new image tag
+        run: |
+          cd apps/frontend/overlays/dev
+          kustomize edit set image frontend=$ECR_REGISTRY/frontend:$IMAGE_TAG
+          cd -
+      
+
+# ---------- COMMIT & PUSH CHANGES ----------
+      - name: Configure Git & set authenticated remote
+        run: | 
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout -b $BUMP_BRANCH
+
+      - name: Commit and push kustomization changes
+        run: |
+          git add apps/frontend/overlays/dev/kustomization.yaml
+          git commit -m "Frontend Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
+          git push origin $BUMP_BRANCH

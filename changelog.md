@@ -1,6 +1,24 @@
 ## Branch Naming Note
 Initial branches (`MM-1`, `MM-2`, `MM-3`) reflect the original setup phase.  
 From this point forward, we adopt semantic branch naming (`feature/`, `bugfix/`, `chore/`) for clarity.
+
+## [chore/githubactions] - 16/09/2025
+- Standardized GitHub Actions pipeline for frontend and backend
+  - Build Docker image tagged with commit SHA.
+  - Inject commit SHA into frontend HTML automatically.
+  - Scan Docker image locally with Trivy for vulnerabilities.
+  - Static code analysis with SonarCloud (branch-aware, main branch coverage).
+  - Push image to immutable ECR repository.
+  - Patch  Kustomize overlays with new image tag automatically.
+  - Commit changes to a CI bump branch.
+
+- Backend pipeline scaffold created (image build + Kustomize patch).
+
+- Updated GitHub Actions to use environment variables for tags to reduce duplication and improve readability.
+
+- Secured secrets usage in CI/CD (AWS credentials, Sonar token).
+
+
 ## [feature/prometheus-grafana] - 11/09/2025
 - Prometheus deployed via helm chart, similar set-up to grafana for now
 

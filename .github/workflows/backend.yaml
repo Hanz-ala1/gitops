@@ -1,0 +1,88 @@
+name: Backend Build, Push to ECR & Patch Kustomization
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'apps/backend/**'
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      BRANCH_NAME: ${{ github.ref_name}}
+      BUMP_BRANCH: ci/backend-bump-${{ github.ref_name }}-${{ github.sha }}
+      IMAGE_TAG: ${{ github.sha }}
+#--------------CHECKOUT-------------
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+#--------------SONARCLOUD-------------
+      - name: SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: apps/backend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+#--------------BUILD IMAGE-------------
+
+      - name: Build backend Docker image
+        run: |
+          docker build -t backend:$IMAGE_TAG ./apps/backend
+
+#--------------TRIVY SCAN LOCAL IMAGE -------------
+      - name: Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: backend:${{ env.IMAGE_TAG}}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '1' #fail if critical or high is found
+
+#--------------Configure AWS -------------
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+#--------------PUSH TO AWS ECR -------------
+      - name: Push backend Docker image to ECR
+        run: |
+          docker tag backend:$IMAGE_TAG $ECR_REGISTRY/backend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/backend:$IMAGE_TAG
+
+#-------------- Kustomization -------------
+      - name: Update backend kustomization with new image tag
+        run: |
+          cd apps/backend/overlays/dev
+          kustomize edit set image backend=$ECR_REGISTRY/backend:$IMAGE_TAG
+          cd -
+      
+
+# ---------- COMMIT & PUSH CHANGES ----------
+      - name: Configure Git & set authenticated remote
+        run: | 
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout -b $BUMP_BRANCH
+
+      - name: Commit and push kustomization changes
+        run: |
+          git add apps/backend/overlays/dev/kustomization.yaml
+          git commit -m "backend Update image tags from CI for ${{ github.sha }}" || echo "No changes to commit"
+          git push origin $BUMP_BRANCH

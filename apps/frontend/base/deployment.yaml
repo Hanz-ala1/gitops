@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: my-frontend
+        image: nginx:latest
         ports:
         - containerPort: 80
