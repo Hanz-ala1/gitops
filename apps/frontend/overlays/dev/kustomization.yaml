@@ -9,5 +9,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: frontend
-  newName: 053447641011.dkr.ecr.eu-west-2.amazonaws.com/my-frontend
-  newTag: frontend-d258f2964ca9e400901b7184f1651be49f2134ae
+  newName: 053447641011.dkr.ecr.eu-west-2.amazonaws.com/frontend
+  newTag: c568c6dc493b0cfe08b7bd790322a13e6f56a47c
