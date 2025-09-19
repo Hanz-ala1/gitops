@@ -35,6 +35,7 @@ Before diving into the GitOps setup, here’s a simplified view of how a pod is 
 - **Domain:** `thriveai.website`
 - **DNS Provider:** Cloudflare
 - **Subdomain for App:** `myapp.thriveai.website`
+- **Subdomain for Grafana:** `grafana.thriveai.website`
 - **DNS Validation:** via `DNS01` challenge through cert-manager
 
 ---
@@ -42,7 +43,10 @@ Before diving into the GitOps setup, here’s a simplified view of how a pod is 
 ## 🧱 Stack Overview
 
 - ✅ Kubernetes (EKS)
-- ✅ ArgoCD
+- ✅ ArgoCD (CD)
+- ✅ Grafana
+- ✅ Prometheus
+- ✅ Github Actions (CI)
 - ✅ cert-manager + ClusterIssuer
 - ✅ Cloudflare DNS (via token)
 - ✅ NGINX Ingress Controller
@@ -54,9 +58,11 @@ Before diving into the GitOps setup, here’s a simplified view of how a pod is 
 ## 📁 Folder Structure
 
 ```text
+├── .github/                   # Github Actions CI For frontend and backend
 ├── apps
 │   ├── backend/               # Base and overlay Kustomize for backend app
 │   ├── frontend/              # Same structure for frontend
+│   ├── monitoring/            # Grafana & Prometheus
 │   └── cert-manager/          # Helm-based cert-manager deployment + ClusterIssuer patch
 ├── bootstrap/
 │   └── root-app.yaml          # App of Apps manifest
@@ -86,6 +92,7 @@ This triggers ArgoCD to:
    - `apps/backend/overlays/dev`
    - `apps/frontend/overlays/dev`
    - `apps/cert-manager/overlays/dev` (including Helm chart installation)
+   - `apps/monitoring/overlays/dev` (including Helm chart installation)
 
 ---
 
@@ -94,8 +101,9 @@ This triggers ArgoCD to:
 These secrets are **not committed**. They must be created manually (or automated later via Sealed Secrets or External Secrets):
 
 ```bash
-kubectl -n cert-manager create secret generic cloudflare-api-token-secret \
-  --from-literal=mykey=<cloudflare-api-token>
+kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from-literal=mykey=<cloudflare-api-token
+
+kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=(createapassword) -n monitoring
 ```
 
 This is required to allow cert-manager to validate your domain with Let’s Encrypt using the DNS01 challenge.
