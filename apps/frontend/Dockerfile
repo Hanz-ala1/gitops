@@ -1,5 +1,5 @@
 # A simple static site server using Nginx test
-FROM nginx:alpine:3.22.2
+FROM alpine:3.22.2
 RUN apk upgrade --no-cache expat
 COPY site/ /usr/share/nginx/html/
 EXPOSE 80
