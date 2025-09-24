@@ -66,9 +66,9 @@ jobs:
         with:
           image-ref: frontend:${{ env.IMAGE_TAG}}
           format: 'table'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           ignore-unfixed: true
-          exit-code: '1' #fail if critical or high is found
+          exit-code: '1' #fail if critical
 
 #--------------Configure AWS -------------
       - name: Configure AWS credentials

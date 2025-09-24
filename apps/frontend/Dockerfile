@@ -1,5 +1,5 @@
 # A simple static site server using Nginx test
-FROM alpine:edge
+FROM nginx:latest
 RUN apk add --no-cache nginx expat
 COPY site/ /usr/share/nginx/html/
 EXPOSE 80
