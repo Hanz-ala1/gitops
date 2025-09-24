@@ -5,7 +5,8 @@ on:
     branches:
       - '**'
     paths:
-      - 'apps/frontend/**'
+      - 'apps/frontend/site'
+      - 'apps/frontend/Dockerfile'
   workflow_dispatch:
 jobs:
   deploy:
