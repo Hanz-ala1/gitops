@@ -1,5 +1,5 @@
 # A simple static site server using Nginx test
-FROM alpine:3.22.1
+FROM nginx:1.27-alpine
 RUN apk add --no-cache expat --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 COPY site/ /usr/share/nginx/html/
 EXPOSE 80
