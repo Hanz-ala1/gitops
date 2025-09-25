@@ -15,7 +15,8 @@ spec:
         app: frontend
     spec:
       containers:
+# kustomize will use the image name frontend to find the image to replace
       - name: frontend
-        image: nginx:latest
+        image: frontend:latest
         ports:
         - containerPort: 80

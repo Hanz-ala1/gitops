@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Hanz-ala1/gitops
-    targetRevision: feature/prometheus-grafana
+    targetRevision: main
     path: envs/dev
   destination:
     server: https://kubernetes.default.svc
