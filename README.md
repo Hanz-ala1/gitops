@@ -76,6 +76,26 @@ Before diving into the GitOps setup, here’s a simplified view of how a pod is 
 
 ---
 
+## ⚙️ CI / CD (GitHub Actions → ECR → ArgoCD)
+
+High level:
+- GitHub Actions builds frontend & backend Docker images when files under `apps/frontend/**` or `apps/backend/**` change.
+- Images are tagged with the commit SHA.
+- The workflow uses `kustomize edit set image ...` to update `apps/*/overlays/dev/kustomization.yaml`.
+- A bump branch (example: `ci/image-bump-<sha>`) is created and pushed. ArgoCD will pick up the change when the bump branch is merged or when the root-app target revision is updated.
+
+Key files:
+- `.github/workflows/frontend.yaml` (frontend build/test/push + kustomize patch)
+- `.github/workflows/backend.yaml` (backend)
+- Note: workflow supports `workflow_dispatch` for manual runs.
+
+Developer commands:
+```bash
+# Manually trigger from CLI (GitHub CLI)
+gh workflow run "Build, Push to ECR & Patch Kustomization" --ref feature/your-branch
+# Or in GitHub UI Actions -> run workflow (select branch)
+
+
 ## ⚙️ Workflow (GitOps with ArgoCD)
 
 To bootstrap the GitOps platform:
@@ -95,6 +115,7 @@ This triggers ArgoCD to:
    - `apps/monitoring/overlays/dev` (including Helm chart installation)
 
 ---
+
 
 ## 🔐 Secrets Setup
 
