@@ -2,6 +2,8 @@
 
 ## 💡 Project Purpose
 
+This repo demonstrates a GitOps pipeline on EKS: GitHub Actions builds images (tagged with commit SHA), pushes them to Amazon ECR, updates the Kustomize overlays (image tags) and commits a bump branch; ArgoCD (App-of-Apps pattern) watches the envs/dev Kustomize tree and syncs changes into the cluster. Monitoring (Grafana & Prometheus) is deployed via ArgoCD Helm Application manifests with values overrides kept in our repo. Secrets are stored outside Git — currently created manually for demo but should be migrated to SealedSecrets or ExternalSecrets in production.
+
 This repository provides an end-to-end GitOps deployment pipeline using **ArgoCD**, **TLS via cert-manager**, and **Cloudflare DNS**. It's built on top of an EKS infrastructure provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab)).
 
 We adopt ArgoCD's **App of Apps** pattern to manage application lifecycle declaratively, promoting consistent, repeatable Kubernetes deployments.
@@ -122,14 +124,25 @@ This triggers ArgoCD to:
 These secrets are **not committed**. They must be created manually (or automated later via Sealed Secrets or External Secrets):
 
 ```bash
-kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from-literal=mykey=<cloudflare-api-token
+kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from-literal=mykey=cloudflare-api-token
 
-kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=(createapassword) -n monitoring
+kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=createapassword -n monitoring
+
+# GitHub Actions push PAT (on GitHub repo settings) as GH_PAT
+# AWS creds (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) as repo secrets
+
 ```
 
 This is required to allow cert-manager to validate your domain with Let’s Encrypt using the DNS01 challenge.
 
 ---
+
+## Monitoring
+```markdown
+### Grafana / Helm values note
+- Initially we embedded Helm `values:` inline in the ArgoCD Application spec for quick testing. To make it better and easier to read, we moved values to `apps/monitoring/base/values.yaml`.
+- ArgoCD cannot automatically use a values YAML in your Git repo for a remote chart unless configured as a second source. We solved this using ArgoCD **multiple sources**: one source for the vendor Helm chart (chart repo), and one source (with `ref:`) pointing to this Git repo where the `values.yaml` lives — referenced as `$<ref>/path/to/values.yaml`.
+- This keeps the upstream chart clean and our overrides versioned in Git.
 
 ## 🐛 Troubleshooting
 
@@ -154,7 +167,7 @@ Force-deletes AWS resources (e.g., LoadBalancers, PVs) that sometimes prevent `t
 
 ## 📌 Next Improvements (Roadmap)
 
-- [ ] CI Pipeline via GitHub Actions (build/test/lint)
+- [ ] CI Pipeline via GitHub Actions (lint)
 - [ ] Integrate AWS Secrets Manager
 - [ ] Setup Sealed Secrets / External Secrets for GitOps-safe secret storage
 - [ ] Add Monitoring Stack (Prometheus, Grafana, AlertManager)
