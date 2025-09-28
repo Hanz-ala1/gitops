@@ -1,6 +1,8 @@
 ## Branch Naming Note
 Initial branches (`MM-1`, `MM-2`, `MM-3`) reflect the original setup phase.  
 From this point forward, we adopt semantic branch naming (`feature/`, `bugfix/`, `chore/`) for clarity.
+## [chore/readme] - 28/09/2025
+- Updated readme to reflect current repo and added a diagram for the workflow
 
 ## [chore/githubactions] - 16/09/2025
 - Standardized GitHub Actions pipeline for frontend and backend
