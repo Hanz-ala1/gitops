@@ -2,26 +2,17 @@
 
 ## 💡 Project Purpose
 
-Diagram picture of the eks workflow 
-
+*Diagram picture of the EKS workflow* (docs/workflow.jpg)
 
 This repository demonstrates a GitOps-driven Kubernetes platform on AWS EKS for consistent, repeatable deployments.
 
-CI (GitHub Actions): builds Docker images (tagged with commit SHA), runs SonarCloud + Trivy scans, pushes to Amazon ECR, updates Kustomize overlays (image tags), and commits a bump branch.
+- **CI (GitHub Actions):** builds Docker images (tagged with commit SHA), runs SonarCloud + Trivy scans, pushes to Amazon ECR, updates Kustomize overlays (image tags), and commits a bump branch.  
+- **CD (ArgoCD, App-of-Apps):** continuously syncs the `envs/dev` Kustomize tree into the cluster, deploying frontend, backend, monitoring, and cert-manager apps.  
+- **Monitoring:** Grafana & Prometheus deployed via ArgoCD with Helm values stored in Git.  
+- **TLS & DNS:** cert-manager issues Let’s Encrypt certs via DNS01 challenge; Cloudflare provides DNS (manual setup now, automation planned).  
+- **Secrets:** currently created manually for demo; to be migrated to SealedSecrets or ExternalSecrets for production.  
+- **Infra:** EKS, IAM, networking, and ALBs provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab)).  
 
-CD (ArgoCD, App-of-Apps): continuously syncs the envs/dev Kustomize tree into the cluster, deploying frontend, backend, monitoring, and cert-manager apps.
-
-Monitoring: Grafana & Prometheus deployed via ArgoCD with Helm values stored in Git.
-
-TLS & DNS: cert-manager issues Let’s Encrypt certs via DNS01 challenge; Cloudflare provides DNS (manual setup now, automation planned).
-
-Secrets: currently created manually for demo; to be migrated to SealedSecrets or ExternalSecrets for production.
-
-Underlying infra (EKS, IAM, networking, ALBs) is provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab))
-
-## 🗺️ EKS Pod Deployment: Background
-
-Before diving into the GitOps setup, here’s a simplified view of how a pod is deployed in EKS when you run a command like: 
 
 
 ![EKS POD DEPLOYMENT DIAGRRAM](docs/eks-pod-deployment.png)
@@ -29,18 +20,27 @@ Before diving into the GitOps setup, here’s a simplified view of how a pod is 
 
 ---
 
-## 🧠 What You'll Learn / Practice
+## 🧠 What You’ll Practice  
+(what’s working now)
 
-| Task | What You'll Learn |
-|------|-------------------|
-| 🔄 Automate cert-manager secrets via Sealed Secrets | Secure secret management in GitOps |
-| 📦 Deploy apps via HelmRelease + Values overrides | Helm + GitOps + Kustomize |
-| 🌐 Automate DNS with ExternalDNS | Dynamic DNS updates with Cloudflare |
-| 🔍 Add Prometheus/Grafana | Kubernetes Observability |
-| 🚀 CI/CD via GitHub Actions | GitOps CI Pipelines |
-| 🔐 Rotate Let’s Encrypt certs | TLS lifecycle automation with alerts |
+- 🔄 Multi-app continuous delivery using **ArgoCD (App of Apps)**  
+- 🚀 Building a **CI pipeline in GitHub Actions** (Docker builds, Trivy & Sonar scans, push to ECR)  
+- 📦 Deploying apps with **ArgoCD + Helm values.yaml overrides**  
+- 🌐 Issuing TLS certificates with **cert-manager (DNS01 challenge + Cloudflare)**  
+- 🔍 Adding **Prometheus & Grafana** for Kubernetes observability  
+- 🔐 Using **GitHub Secrets** for CI credentials  
+
 
 ---
+
+## 📌 Next Improvements (Roadmap)
+
+- [ ] Automate DNS management via **ExternalDNS**  
+- [ ] Secure secret storage with **Sealed Secrets / External Secrets**  
+- [ ] Full automation of certificate lifecycle (DNS + renewal)  
+ 
+ ---
+
 
 ## 🌐 Domain Setup
 
@@ -98,7 +98,7 @@ High level:
 
 Key files:
 - `.github/workflows/frontend.yaml` (frontend build/test/push + kustomize patch)
-- `.github/workflows/backend.yaml` (backend)
+- `.github/workflows/backend.yaml` (backend build/test/push + kustomize patch)
 - Note: workflow supports `workflow_dispatch` for manual runs.
 
 Developer commands:
@@ -107,7 +107,7 @@ Developer commands:
 gh workflow run "Build, Push to ECR & Patch Kustomization" --ref feature/your-branch
 # Or in GitHub UI Actions -> run workflow (select branch)
 
-
+```
 ## ⚙️ Workflow (GitOps with ArgoCD)
 
 To bootstrap the GitOps platform:
@@ -130,33 +130,31 @@ This triggers ArgoCD to:
 
 
 ## 🔐 Secrets Setup
-GitHub Actions (CI)
-AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+GitHub Actions (CI):
 
-GH_PAT (Personal Access Token for bump branch commits)
+- AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 
-SONAR_TOKEN (SonarCloud scan)
+- GH_PAT (Personal Access Token for bump branch commits)
 
-AWS ECR 
+- SONAR_TOKEN (SonarCloud scan)
+
+- AWS ECR Creds 
 
 
-Kubernetes (CD)
+Kubernetes (CD) : 
 These secrets are **not committed**. They must be created manually (or automated later via Sealed Secrets or External Secrets):
 
 ```bash
 kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from-literal=mykey=cloudflare-api-token
 
 kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=createapassword -n monitoring
-
-
 ```
 
-This is required to allow cert-manager to validate your domain with Let’s Encrypt using the DNS01 challenge.
 
 ---
 
 ## Monitoring
-```markdown
+
 ### Grafana / Helm values note
 - Initially we embedded Helm `values:` inline in the ArgoCD Application spec for quick testing. To make it better and easier to read, we moved values to `apps/monitoring/base/values.yaml`.
 - ArgoCD cannot automatically use a values YAML in your Git repo for a remote chart unless configured as a second source. We solved this using ArgoCD **multiple sources**: one source for the vendor Helm chart (chart repo), and one source (with `ref:`) pointing to this Git repo where the `values.yaml` lives — referenced as `$<ref>/path/to/values.yaml`.
@@ -183,15 +181,7 @@ Force-deletes AWS resources (e.g., LoadBalancers, PVs) that sometimes prevent `t
 
 ---
 
-## 📌 Next Improvements (Roadmap)
 
-- [ ] CI Pipeline via GitHub Actions (lint)
-- [ ] Integrate AWS Secrets Manager
-- [ ] Setup Sealed Secrets / External Secrets for GitOps-safe secret storage
-- [ ] Add Monitoring Stack (Prometheus, Grafana, AlertManager)
-- [ ] Enable Prod environment deployment (`envs/prod`)
-
----
 
 ## 🤝 Contributions
 
@@ -203,10 +193,16 @@ This repo is intended to demonstrate real-world GitOps implementation practices 
 
 This project demonstrates:
 
-- Infrastructure as Code (Terraform)
-- GitOps Lifecycle Management (ArgoCD)
-- Secrets Management and TLS Automation
-- Working with production-grade practices (DNS, cert rotation, CI/CD)
-- Clean Git structure for modularity, environment promotion, and reusability
+Infrastructure as Code (Terraform)
+
+GitOps Lifecycle Management (ArgoCD App-of-Apps)
+
+Secure Secrets & TLS Automation (cert-manager + DNS01)
+
+CI/CD Separation (GitHub Actions CI, ArgoCD CD)
+
+Observability & Monitoring (Prometheus, Grafana)
+
+Environment promotion & modular Git structure
 
 
