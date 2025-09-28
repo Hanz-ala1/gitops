@@ -2,8 +2,6 @@
 
 ## 💡 Project Purpose
 
-*Diagram picture of the EKS workflow* (docs/workflow.jpg)
-
 This repository demonstrates a GitOps-driven Kubernetes platform on AWS EKS for consistent, repeatable deployments.
 
 - **CI (GitHub Actions):** builds Docker images (tagged with commit SHA), runs SonarCloud + Trivy scans, pushes to Amazon ECR, updates Kustomize overlays (image tags), and commits a bump branch.  
@@ -13,9 +11,9 @@ This repository demonstrates a GitOps-driven Kubernetes platform on AWS EKS for 
 - **Secrets:** currently created manually for demo; to be migrated to SealedSecrets or ExternalSecrets for production.  
 - **Infra:** EKS, IAM, networking, and ALBs provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab)).  
 
+<img src="https://github.com/Hanz-ala1/gitops/blob/chore/readme/docs/workflow.jpg" width="700" height="550">  
 
 
-![EKS POD DEPLOYMENT DIAGRRAM](docs/eks-pod-deployment.png)
 
 
 ---
@@ -132,14 +130,11 @@ This triggers ArgoCD to:
 ## 🔐 Secrets Setup
 GitHub Actions (CI):
 
-- AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-
+- AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY  (Temporaily use)
 - GH_PAT (Personal Access Token for bump branch commits)
-
 - SONAR_TOKEN (SonarCloud scan)
-
-- AWS ECR Creds 
-
+- AWS ECR (ECR Directory)
+- AWS_REGION
 
 Kubernetes (CD) : 
 These secrets are **not committed**. They must be created manually (or automated later via Sealed Secrets or External Secrets):
@@ -147,18 +142,11 @@ These secrets are **not committed**. They must be created manually (or automated
 ```bash
 kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from-literal=mykey=cloudflare-api-token
 
-kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=createapassword -n monitoring
+kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=createapassword
 ```
 
 
 ---
-
-## Monitoring
-
-### Grafana / Helm values note
-- Initially we embedded Helm `values:` inline in the ArgoCD Application spec for quick testing. To make it better and easier to read, we moved values to `apps/monitoring/base/values.yaml`.
-- ArgoCD cannot automatically use a values YAML in your Git repo for a remote chart unless configured as a second source. We solved this using ArgoCD **multiple sources**: one source for the vendor Helm chart (chart repo), and one source (with `ref:`) pointing to this Git repo where the `values.yaml` lives — referenced as `$<ref>/path/to/values.yaml`.
-- This keeps the upstream chart clean and our overrides versioned in Git.
 
 ## 🐛 Troubleshooting
 
@@ -168,6 +156,12 @@ kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --f
 | Certs not issued            | Confirm ClusterIssuer exists, secret exists, DNS propagates   |
 | `Error 1016: Origin DNS`    | ELB changed → update Cloudflare A record                      |
 | ArgoCD App stuck            | Check `argocd app logs <app>` or inspect Kustomize path       |
+
+### Grafana / Helm values note
+- Initially we embedded Helm `values:` inline in the ArgoCD Application spec for quick testing. To make it better and easier to read, we moved values to `apps/monitoring/base/values.yaml`.
+- ArgoCD cannot automatically use a values YAML in your Git repo for a remote chart unless configured as a second source. We solved this using ArgoCD **multiple sources**: one source for the vendor Helm chart (chart repo), and one source (with `ref:`) pointing to this Git repo where the `values.yaml` lives — referenced as `$<ref>/path/to/values.yaml`.
+- This keeps the upstream chart clean and our overrides versioned in Git.
+
 
 ---
 
@@ -193,16 +187,11 @@ This repo is intended to demonstrate real-world GitOps implementation practices 
 
 This project demonstrates:
 
-Infrastructure as Code (Terraform)
-
-GitOps Lifecycle Management (ArgoCD App-of-Apps)
-
-Secure Secrets & TLS Automation (cert-manager + DNS01)
-
-CI/CD Separation (GitHub Actions CI, ArgoCD CD)
-
-Observability & Monitoring (Prometheus, Grafana)
-
-Environment promotion & modular Git structure
+- Infrastructure as Code (Terraform)
+- GitOps Lifecycle Management (ArgoCD App-of-Apps)
+- Secure Secrets & TLS Automation (cert-manager + DNS01)
+- CI/CD Separation (GitHub Actions CI, ArgoCD CD)
+- Observability & Monitoring (Prometheus, Grafana)
+- Environment promotion & modular Git structure
 
 
