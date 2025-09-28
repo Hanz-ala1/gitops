@@ -2,12 +2,22 @@
 
 ## 💡 Project Purpose
 
-This repo demonstrates a GitOps pipeline on EKS: GitHub Actions builds images (tagged with commit SHA), pushes them to Amazon ECR, updates the Kustomize overlays (image tags) and commits a bump branch; ArgoCD (App-of-Apps pattern) watches the envs/dev Kustomize tree and syncs changes into the cluster. Monitoring (Grafana & Prometheus) is deployed via ArgoCD Helm Application manifests with values overrides kept in our repo. Secrets are stored outside Git — currently created manually for demo but should be migrated to SealedSecrets or ExternalSecrets in production.
+Diagram picture of the eks workflow 
 
-This repository provides an end-to-end GitOps deployment pipeline using **ArgoCD**, **TLS via cert-manager**, and **Cloudflare DNS**. It's built on top of an EKS infrastructure provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab)).
 
-We adopt ArgoCD's **App of Apps** pattern to manage application lifecycle declaratively, promoting consistent, repeatable Kubernetes deployments.
+This repository demonstrates a GitOps-driven Kubernetes platform on AWS EKS for consistent, repeatable deployments.
 
+CI (GitHub Actions): builds Docker images (tagged with commit SHA), runs SonarCloud + Trivy scans, pushes to Amazon ECR, updates Kustomize overlays (image tags), and commits a bump branch.
+
+CD (ArgoCD, App-of-Apps): continuously syncs the envs/dev Kustomize tree into the cluster, deploying frontend, backend, monitoring, and cert-manager apps.
+
+Monitoring: Grafana & Prometheus deployed via ArgoCD with Helm values stored in Git.
+
+TLS & DNS: cert-manager issues Let’s Encrypt certs via DNS01 challenge; Cloudflare provides DNS (manual setup now, automation planned).
+
+Secrets: currently created manually for demo; to be migrated to SealedSecrets or ExternalSecrets for production.
+
+Underlying infra (EKS, IAM, networking, ALBs) is provisioned via Terraform (see [infra repo](https://github.com/Hanz-ala1/eks-platform-lab))
 
 ## 🗺️ EKS Pod Deployment: Background
 
@@ -120,7 +130,17 @@ This triggers ArgoCD to:
 
 
 ## 🔐 Secrets Setup
+GitHub Actions (CI)
+AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 
+GH_PAT (Personal Access Token for bump branch commits)
+
+SONAR_TOKEN (SonarCloud scan)
+
+AWS ECR 
+
+
+Kubernetes (CD)
 These secrets are **not committed**. They must be created manually (or automated later via Sealed Secrets or External Secrets):
 
 ```bash
@@ -128,8 +148,6 @@ kubectl -n cert-manager create secret generic cloudflare-api-token-secret --from
 
 kubectl create secret generic grafana-admin --from-literal=admin-user=admin  --from-literal=admin-password=createapassword -n monitoring
 
-# GitHub Actions push PAT (on GitHub repo settings) as GH_PAT
-# AWS creds (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY) as repo secrets
 
 ```
 
